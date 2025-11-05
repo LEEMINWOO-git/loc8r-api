@@ -1,9 +1,11 @@
-// app_server/controllers/locations.js
-import request from 'request';
+// import request from 'request';
 
 const apiOptions = {
   server: 'http://localhost:3000'
 };
+if (process.env.NODE_ENV === 'production') {
+  apiOptions.server = 'https://loc8r-api-wiwl.onrender.com';
+}
 
 /* 거리 포맷 함수는 그대로 */
 const formatDistance = (distance) => {
