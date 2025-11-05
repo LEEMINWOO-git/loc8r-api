@@ -1,4 +1,4 @@
-// import request from 'request';
+import request from 'request';
 
 const apiOptions = {
   server: 'http://localhost:3000'
