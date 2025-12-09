@@ -1,57 +1,83 @@
-const mongoose = require('mongoose');
-const dbURI = 'mongodb://localhost/Loc8r';
-const readLine = require('readline');
+import mongoose from 'mongoose';
+import readline from 'readline';
+import dotenv from 'dotenv';
 
-const connect = () => {
-  setTimeout(() => mongoose.connect(dbURI), 1000);
+dotenv.config();
+mongoose.set("strictQuery", false);
+
+// 환경변수
+const dbUser = process.env.MONGODB_USER;
+const dbPassword = process.env.MONGODB_PASSWORD;
+const dbCluster = process.env.MONGODB_CLUSTER;
+const dbName = process.env.MONGODB_DBNAME;
+
+if (!dbUser || !dbPassword || !dbCluster || !dbName) {
+  console.error('❌ Missing DB environment variables');
+  process.exit(1);
 }
 
+// MongoDB Atlas 연결 URI 생성
+const dbURI = `mongodb+srv://${encodeURIComponent(dbUser)}:${encodeURIComponent(dbPassword)}@${dbCluster}/${dbName}?retryWrites=true&w=majority`;
+
+const connect = async () => {
+  try {
+    await mongoose.connect(dbURI);
+  } catch (err) {
+    console.error('Initial MongoDB connection error:', err.message);
+    setTimeout(connect, 3000);
+  }
+};
+
 mongoose.connection.on('connected', () => {
-  console.log('Mongoose connected to ' + dbURI);
+  console.log(`Mongoose connected to ${dbURI}`);
 });
 
 mongoose.connection.on('error', err => {
-  console.log('error: ' + err);
-  return connect();
+  console.error('Mongoose connection error:', err.message);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('disconnected');
+  console.warn('Mongoose disconnected');
 });
 
+// Windows 종료 처리
 if (process.platform === 'win32') {
-  const rl = readLine.createInterface({
+  const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
   });
-  rl.on ('SIGINT', () => {
+  rl.on('SIGINT', () => {
     process.emit("SIGINT");
   });
 }
 
-const gracefulShutdown = (msg, callback) => {
-  mongoose.connection.close( () => {
+// 안전 종료 핸들러
+const gracefulShutdown = async (msg) => {
+  try {
+    await mongoose.connection.close();
     console.log(`Mongoose disconnected through ${msg}`);
-    callback();
-  });
+  } catch (err) {
+    console.error('Error during mongoose disconnection:', err);
+  }
 };
 
-process.once('SIGUSR2', () => {
-  gracefulShutdown('nodemon restart', () => {
-    process.kill(process.pid, 'SIGUSR2');
-  });
-});
-process.on('SIGINT', () => {
-  gracefulShutdown('app termination', () => {
-    process.exit(0);
-  });
-});
-process.on('SIGTERM', () => {
-  gracefulShutdown('Heroku app shutdown', () => {
-    process.exit(0);
-  });
+process.once('SIGUSR2', async () => {
+  await gracefulShutdown('nodemon restart');
+  process.kill(process.pid, 'SIGUSR2');
 });
 
-connect();
+process.on('SIGINT', async () => {
+  await gracefulShutdown('app termination');
+  process.exit(0);
+});
 
-require('./locations');
+process.on('SIGTERM', async () => {
+  await gracefulShutdown('Heroku app shutdown');
+  process.exit(0);
+});
+
+await connect();
+
+// 모델 로딩
+import './locations.js';
+import './users.js';

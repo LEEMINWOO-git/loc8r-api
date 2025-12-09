@@ -6,15 +6,14 @@ html
     link(rel='stylesheet', href='/stylesheets/bootstrap.min.css')
     link(rel='stylesheet', href='/stylesheets/all.min.css')
     link(rel='stylesheet', href='/stylesheets/style.css')
+
   body
     nav.navbar.fixed-top.navbar-expand-md.navbar-light
       .container
         a.navbar-brand(href='/') Loc8r
-        // ▼ BS5: data-bs-*
         button.navbar-toggler(type='button', data-bs-toggle='collapse', data-bs-target='#navbarMain')
           span.navbar-toggler-icon
         #navbarMain.collapse.navbar-collapse
-          // ▼ BS5: .mr-auto → .me-auto
           ul.navbar-nav.me-auto
             li.nav-item
               a.nav-link(href='/about/') About
@@ -27,7 +26,8 @@ html
           .col-12
             small &copy; 2021810050 이민우
 
-    // ▼ BS5 토글러 동작용 (선택: 스타일엔 영향X)
+    // ▼ 사진에서 요구한 scripts 영역
     script(src="https://code.jquery.com/jquery-3.6.0.min.js")
-    script(src='/javascripts/bootstrap.min.js')
+    script(src="/javascripts/bootstrap.min.js")
     script(src="/javascripts/validation.js")
+    block scripts

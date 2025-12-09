@@ -10,19 +10,14 @@ block content
   .row
     .col-12.col-md-8
       .error= message
-
-      each location in locations
-        .card
-          .card-block
-            h4
-              // ✅ 각 항목의 _id를 상세 URL에 넣어서 이동
-              a(href=`/location/${location._id}`)= location.name
-              +outputRating(location.rating)
-              span.badge.badge-pill.badge-default.float-right= location.distance
-            p.address= location.address
-            .facilities
-              each facility in location.facilities
-                span.badge.badge-warning= facility
+      app-home-list
 
     .col-12.col-md-4
-      p.lead= sidebar
+      .card
+        .card-block
+          p.lead= sidebar
+
+block scripts
+  script(src='/build/runtime.e4985b6c090739db.js')
+  script(src='/build/polyfills.7890da1470480aee.js')
+  script(src='/build/main.6affdf316b9ecc8b.js')
